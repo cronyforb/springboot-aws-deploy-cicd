@@ -24,7 +24,7 @@ phases:
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - echo Writing image definitions file...
-      - DOCKER_CONTAINER_NAME=codedemo   # must match ECS container name
+      - DOCKER_CONTAINER_NAME=kingsleycontainer    # must match ECS container name
       - printf '[{"name":"%s","imageUri":"%s"}]' $DOCKER_CONTAINER_NAME $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
       - echo Printing imagedefinitions.json
       - cat imagedefinitions.json
