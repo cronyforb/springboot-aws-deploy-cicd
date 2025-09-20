@@ -1,18 +1,18 @@
 version: 0.2
+
 phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR....
       - aws --version
-      #- $(aws ecr get-login --region ap-south-1 --no-include-email)
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 147997122361.dkr.ecr.us-east-1.amazonaws.com
-      - # Replace with this to your repository URI
+      - # ECR repository URI
       - REPOSITORY_URI=147997122361.dkr.ecr.us-east-1.amazonaws.com/codedemo
-      - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
+      - IMAGE_TAG=0.2   # 👈 Fixed image version
   build:
     commands:
       - echo Build started on `date`
-      - echo building the Jar file
+      - echo Building the JAR file...
       - mvn clean install
       - echo Building the Docker image...
       - docker build -t $REPOSITORY_URI:latest .
@@ -20,16 +20,15 @@ phases:
   post_build:
     commands:
       - echo Build completed on `date`
-      - echo pushing to repo
+      - echo Pushing Docker images to ECR...
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - echo Writing image definitions file...
-      # Give your container name
-      - DOCKER_CONTAINER_NAME=codedemo
+      - DOCKER_CONTAINER_NAME=codedemo   # must match ECS container name
       - printf '[{"name":"%s","imageUri":"%s"}]' $DOCKER_CONTAINER_NAME $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
-      - echo $DOCKER_CONTAINER_NAME
-      - echo printing imagedefinitions.json
+      - echo Printing imagedefinitions.json
       - cat imagedefinitions.json
+
 artifacts:
   files:
     - imagedefinitions.json
